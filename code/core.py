@@ -6,12 +6,14 @@ from statsmodels.stats.proportion import proportion_confint
 
 
 class Smooth(object):
-    """A smoothed classifier g """
+    """A smoothed classifier g"""
 
     # to abstain, Smooth returns this int
     ABSTAIN = -1
 
-    def __init__(self, base_classifier: torch.nn.Module, num_classes: int, sigma: float):
+    def __init__(
+        self, base_classifier: torch.nn.Module, num_classes: int, sigma: float
+    ):
         """
         :param base_classifier: maps from [batch x channel x height x width] to [batch x num_classes]
         :param num_classes:
@@ -21,8 +23,10 @@ class Smooth(object):
         self.num_classes = num_classes
         self.sigma = sigma
 
-    def certify(self, x: torch.tensor, n0: int, n: int, alpha: float, batch_size: int) -> (int, float):
-        """ Monte Carlo algorithm for certifying that g's prediction around x is constant within some L2 radius.
+    def certify(
+        self, x: torch.tensor, n0: int, n: int, alpha: float, batch_size: int
+    ) -> (int, float):
+        """Monte Carlo algorithm for certifying that g's prediction around x is constant within some L2 radius.
         With probability at least 1 - alpha, the class returned by this method will equal g(x), and g's prediction will
         robust within a L2 ball of radius R around x.
 
@@ -51,7 +55,7 @@ class Smooth(object):
             return cAHat, radius
 
     def predict(self, x: torch.tensor, n: int, alpha: float, batch_size: int) -> int:
-        """ Monte Carlo algorithm for evaluating the prediction of g at x.  With probability at least 1 - alpha, the
+        """Monte Carlo algorithm for evaluating the prediction of g at x.  With probability at least 1 - alpha, the
         class returned by this method will equal g(x).
 
         This function uses the hypothesis test described in https://arxiv.org/abs/1610.03944
@@ -74,7 +78,7 @@ class Smooth(object):
             return top2[0]
 
     def _sample_noise(self, x: torch.tensor, num: int, batch_size) -> np.ndarray:
-        """ Sample the base classifier's prediction under noisy corruptions of the input x.
+        """Sample the base classifier's prediction under noisy corruptions of the input x.
 
         :param x: the input [channel x width x height]
         :param num: number of samples to collect
@@ -88,7 +92,7 @@ class Smooth(object):
                 num -= this_batch_size
 
                 batch = x.repeat((this_batch_size, 1, 1, 1))
-                noise = torch.randn_like(batch, device='cuda') * self.sigma
+                noise = torch.randn_like(batch, device="cpu") * self.sigma
                 predictions = self.base_classifier(batch + noise).argmax(1)
                 counts += self._count_arr(predictions.cpu().numpy(), self.num_classes)
             return counts
@@ -100,7 +104,7 @@ class Smooth(object):
         return counts
 
     def _lower_confidence_bound(self, NA: int, N: int, alpha: float) -> float:
-        """ Returns a (1 - alpha) lower confidence bound on a bernoulli proportion.
+        """Returns a (1 - alpha) lower confidence bound on a bernoulli proportion.
 
         This function uses the Clopper-Pearson method.
 

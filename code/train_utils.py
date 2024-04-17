@@ -1,7 +1,9 @@
 import torch
 
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self):
         self.reset()
 
@@ -30,16 +32,18 @@ def accuracy(output, target, topk=(1,)):
 
         res = []
         for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+            correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
+
 def init_logfile(filename: str, text: str):
-    f = open(filename, 'w')
-    f.write(text+"\n")
+    f = open(filename, "w")
+    f.write(text + "\n")
     f.close()
 
+
 def log(filename: str, text: str):
-    f = open(filename, 'a')
-    f.write(text+"\n")
+    f = open(filename, "a")
+    f.write(text + "\n")
     f.close()
